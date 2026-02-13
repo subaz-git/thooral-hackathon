@@ -1,15 +1,15 @@
 1. Technology Stack Selection:
-       * Language: Python (due to mature Google API client libraries and suitability for CLI tools).
+     * Language: Python (due to mature Google API client libraries and suitability for CLI tools).
        * CLI Framework: Click or Typer for robust command-line interface development.
 
 
-  2. Google API Integration & Authentication:
-       * Authentication: Implement OAuth 2.0 for secure user authentication with Google Workspace.
-         This will involve:
-           * Setting up a Google Cloud Project and enabling the necessary Google Docs, Google Sheets,
+2. Google API Integration & Authentication:
+     * Authentication: Implement OAuth 2.0 for secure user authentication with Google Workspace.
+       This will involve:
+         * Setting up a Google Cloud Project and enabling the necessary Google Docs, Google Sheets,
              and Google Forms APIs.
-           * Handling client_id.json for credential management.
-       * API Clients: Utilize Google's official Python client libraries (google-api-python-client,
+         * Handling client_id.json for credential management.
+     * API Clients: Utilize Google's official Python client libraries (google-api-python-client,
          google-auth-oauthlib) for interacting with the respective Workspace APIs.
 
 
