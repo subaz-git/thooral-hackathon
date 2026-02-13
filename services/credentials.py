@@ -22,13 +22,32 @@ def load_token_payload():
 def get_credentials():
     creds = None
     if os.path.exists(CREDENTIALS_FILE):
-        creds = Credentials.from_authorized_user_file(CREDENTIALS_FILE, SCOPES)
+        creds = Credentials.from_authorized_user_file(CREDENTIALS_FILE)
+
+        granted_scopes = set(creds.scopes or [])
+        required_scopes = set(SCOPES)
+        missing_scopes = sorted(required_scopes - granted_scopes)
+        if missing_scopes:
+            echo_error(
+                "auth",
+                "Stored credentials are missing required scopes.",
+                "Run 'python3 gsuite_cli.py auth login' to re-authorize with new scopes.",
+            )
+            return None
 
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             try:
                 creds.refresh(Request())
             except Exception as error:
+                error_text = str(error)
+                if "invalid_scope" in error_text:
+                    echo_error(
+                        "auth",
+                        "Stored credentials are no longer valid for current scopes.",
+                        "Run 'python3 gsuite_cli.py auth logout' then 'python3 gsuite_cli.py auth login'.",
+                    )
+                    return None
                 echo_error("auth", f"Failed to refresh credentials: {error}")
                 return None
         else:
@@ -40,4 +59,3 @@ def get_credentials():
             return None
 
     return creds
-

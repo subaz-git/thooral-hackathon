@@ -1,6 +1,7 @@
 import click
 
 from services import docs_service
+from services import sheets_service
 from services.auth_service import login as login_user
 from services.auth_service import logout as logout_user
 from services.config import CLIENT_SECRETS_FILE
@@ -247,6 +248,152 @@ def edit(document_id, append, set_content):
         click.echo(f"Document ID '{document_id}' content replaced successfully.")
     except Exception as error:
         echo_exception("docs edit", error)
+
+
+@gsuite.group()
+def sheets():
+    """Commands for Google Sheets."""
+    pass
+
+
+@sheets.command(name="create")
+@click.argument("title")
+def create_sheet(title):
+    """Creates a new Google Sheet."""
+    creds = get_credentials()
+    if not creds:
+        return
+
+    try:
+        spreadsheet = sheets_service.create_spreadsheet(creds, title)
+        spreadsheet_id = spreadsheet.get("spreadsheetId")
+        click.echo(f"Created spreadsheet with title: {title}")
+        click.echo(f"Spreadsheet ID: {spreadsheet_id}")
+        click.echo(
+            f"Spreadsheet URL: {spreadsheet.get('spreadsheetUrl')}"
+        )
+    except Exception as error:
+        echo_exception("sheets create", error)
+
+
+@sheets.command(name="list")
+def list_sheets():
+    """Lists Google Sheets."""
+    creds = get_credentials()
+    if not creds:
+        return
+
+    try:
+        items = sheets_service.list_spreadsheets(creds)
+        if not items:
+            click.echo("No spreadsheets found.")
+            return
+
+        click.echo("Spreadsheets:")
+        for item in items:
+            click.echo(f"{item['name']} ({item['id']})")
+    except Exception as error:
+        echo_exception("sheets list", error)
+
+
+@sheets.command(name="read")
+@click.argument("spreadsheet_id")
+@click.argument("cell_range")
+def read_sheet(spreadsheet_id, cell_range):
+    """Reads values from a spreadsheet range."""
+    creds = get_credentials()
+    if not creds:
+        return
+
+    try:
+        result = sheets_service.read_values(creds, spreadsheet_id, cell_range)
+        values = result.get("values", [])
+        if not values:
+            click.echo("No values found.")
+            return
+
+        click.echo(f"Range: {result.get('range', cell_range)}")
+        click.echo(f"Major Dimension: {result.get('majorDimension', 'ROWS')}")
+        click.echo("Values:")
+        for row in values:
+            click.echo("\t".join(str(cell) for cell in row))
+    except Exception as error:
+        echo_exception("sheets read", error)
+
+
+@sheets.command(name="write")
+@click.argument("spreadsheet_id")
+@click.argument("cell_range")
+@click.argument("data")
+@click.option(
+    "--major-dimension",
+    type=click.Choice(["rows", "columns"], case_sensitive=False),
+    default="rows",
+    show_default=True,
+    help="Interpret values by rows or columns.",
+)
+@click.option(
+    "--value-input-option",
+    type=click.Choice(["raw", "user_entered"], case_sensitive=False),
+    default="raw",
+    show_default=True,
+    help="How input data should be interpreted by Sheets.",
+)
+def write_sheet(
+    spreadsheet_id,
+    cell_range,
+    data,
+    major_dimension,
+    value_input_option,
+):
+    """Writes values to a spreadsheet range."""
+    creds = get_credentials()
+    if not creds:
+        return
+
+    try:
+        values = sheets_service.parse_input_data(data)
+    except ValueError as error:
+        echo_error("sheets write", str(error))
+        return
+    except Exception as error:
+        echo_exception("sheets write", error)
+        return
+
+    try:
+        result = sheets_service.write_values(
+            creds,
+            spreadsheet_id,
+            cell_range,
+            values,
+            major_dimension=major_dimension.upper(),
+            value_input_option=value_input_option.upper(),
+        )
+        click.echo(f"Updated range: {result.get('updatedRange', cell_range)}")
+        click.echo(f"Updated rows: {result.get('updatedRows', 0)}")
+        click.echo(f"Updated columns: {result.get('updatedColumns', 0)}")
+        click.echo(f"Updated cells: {result.get('updatedCells', 0)}")
+    except Exception as error:
+        echo_exception("sheets write", error)
+
+
+@sheets.command(name="clear")
+@click.argument("spreadsheet_id")
+@click.argument("cell_range")
+def clear_sheet(spreadsheet_id, cell_range):
+    """Clears values in a spreadsheet range."""
+    creds = get_credentials()
+    if not creds:
+        return
+
+    try:
+        result = sheets_service.clear_values(creds, spreadsheet_id, cell_range)
+        click.echo(
+            f"Cleared range: {result.get('clearedRange', cell_range)}"
+        )
+    except Exception as error:
+        echo_exception("sheets clear", error)
+
 
 if __name__ == '__main__':
     gsuite()
