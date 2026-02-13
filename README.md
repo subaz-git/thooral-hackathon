@@ -10,7 +10,7 @@ A command-line interface (CLI) for interacting with Google Workspace (Docs, Shee
 
 ## Implemented Features
 
-Currently, the CLI supports authentication and basic Google Docs operations.
+Currently, the CLI supports authentication, Google Docs operations, and core Google Sheets operations.
 
 ### 1. Authentication
 
@@ -182,6 +182,67 @@ Shares a Google Document with a specific user and role.
 python3 gsuite_cli.py docs share <document_id> --email user@example.com --role writer
 ```
 
+### 3. Google Sheets Commands
+
+**`gsuite sheets create <title>`**
+
+Creates a new Google Sheet.
+
+**Usage:**
+
+```bash
+python3 gsuite_cli.py sheets create "Budget 2026"
+```
+
+**`gsuite sheets list`**
+
+Lists Google Sheets available through your Drive access.
+
+**Usage:**
+
+```bash
+python3 gsuite_cli.py sheets list
+```
+
+**`gsuite sheets read <spreadsheet_id> <range>`**
+
+Reads values from a specific range.
+
+**Usage:**
+
+```bash
+python3 gsuite_cli.py sheets read <spreadsheet_id> "Sheet1!A1:C5"
+```
+
+**`gsuite sheets write <spreadsheet_id> <range> <data>`**
+
+Writes values to a specific range.
+
+Supported data input formats:
+- Comma-separated single row: `"1,2,3"`
+- Semicolon-separated rows: `"1,2;3,4"`
+- JSON list/list-of-lists: `"[\"A\",\"B\"]"` or `"[[\"A\",\"B\"],[\"C\",\"D\"]]"`
+
+**Usage:**
+
+```bash
+python3 gsuite_cli.py sheets write <spreadsheet_id> "Sheet1!A1:C1" "1,2,3"
+```
+
+```bash
+python3 gsuite_cli.py sheets write <spreadsheet_id> "Sheet1!A1:B2" "[[\"A\",\"B\"],[\"C\",\"D\"]]" --value-input-option user_entered
+```
+
+**`gsuite sheets clear <spreadsheet_id> <range>`**
+
+Clears values from a specific range.
+
+**Usage:**
+
+```bash
+python3 gsuite_cli.py sheets clear <spreadsheet_id> "Sheet1!A1:C5"
+```
+
 ## Setup and Installation
 
 1.  **Clone the repository:**
@@ -198,7 +259,7 @@ python3 gsuite_cli.py docs share <document_id> --email user@example.com --role w
 3.  **Google Cloud Project Setup:**
     *   Go to the [Google Cloud Console](https://console.cloud.google.com/).
     *   Create a new project or select an existing one.
-    *   Enable the **Google Docs API** and **Google Drive API** for your project.
+    *   Enable the **Google Docs API**, **Google Drive API**, and **Google Sheets API** for your project.
     *   Navigate to "APIs & Services" -> "Credentials".
     *   Create "OAuth client ID" credentials for a "Desktop app".
     *   Download the `client_secrets.json` file.
@@ -211,5 +272,7 @@ python3 gsuite_cli.py docs share <document_id> --email user@example.com --role w
     ```bash
     python3 gsuite_cli.py auth login
     ```
+
+If you authenticated before Sheets support was added, run `auth login` again so the new Sheets scope is granted.
 
 You are now ready to use the GSuite CLI!

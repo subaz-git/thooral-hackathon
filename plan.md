@@ -13,6 +13,13 @@
   - `docs get --format <plain_text|markdown>`
   - `docs get --output <file>`
   - `docs delete --yes` with confirmation prompt when `--yes` is not provided.
+- Phase 3 Sheets MVP implemented:
+  - `sheets create <title>`
+  - `sheets list`
+  - `sheets read <spreadsheet_id> <range>`
+  - `sheets write <spreadsheet_id> <range> <data>`
+  - `sheets clear <spreadsheet_id> <range>`
+  - Sheets OAuth scope added (`https://www.googleapis.com/auth/spreadsheets`)
 - Service-layer refactor completed:
   - `services/config.py`
   - `services/credentials.py`
@@ -23,7 +30,7 @@
 - Added CLI smoke tests in `tests/test_cli.py`.
 
 ### Remaining from Roadmap
-- Sheets MVP, Forms MVP, and quality hardening.
+- Forms MVP and quality hardening.
 
 ## 1. Goal
 
@@ -47,20 +54,24 @@ Based on `gsuite_cli.py`, the current implementation is:
 - `docs edit <document_id> --set <text>`
 - `docs copy <document_id> <new_title>`
 - `docs share <document_id> --email <email> --role <reader|writer|commenter>`
-- Shared services for config/credentials/auth/docs/errors
+- `sheets create <title>`
+- `sheets list`
+- `sheets read <spreadsheet_id> <range>`
+- `sheets write <spreadsheet_id> <range> <data>`
+- `sheets clear <spreadsheet_id> <range>`
+- Shared services for config/credentials/auth/docs/sheets/errors
 - Basic CLI smoke tests (`tests/test_cli.py`)
 
 ### Not Implemented Yet
-- Any `sheets ...` command group
 - Any `forms ...` command group
 - Integration tests with real Google APIs
 - Optional docs replace command (`docs edit --replace ...`)
 
 ## 3. Key Gaps and Risks
 
-- Sheets and Forms command groups are still missing, so the CLI is Docs-first today.
+- Forms command group is still missing, so the CLI is Docs+Sheets today.
 - Automated integration coverage is missing for live Google API behavior.
-- Scopes are not yet aligned to future Sheets write actions.
+- Existing users may need to re-authenticate to grant newly added Sheets scope.
 - Current tests are smoke-level and do not yet validate end-to-end API responses.
 
 ## 4. Optimized Roadmap
@@ -149,6 +160,6 @@ Based on `gsuite_cli.py`, the current implementation is:
 ## 6. Immediate Next Sprint (Recommended)
 
 1. Implement optional `docs edit --replace <old> --with <new>`.
-2. Start Sheets MVP with `sheets create` and `sheets list`.
+2. Start Forms MVP with `forms create` and `forms list`.
 3. Add integration tests against a dedicated Google test account.
 4. Add machine-readable output mode (`--json`) for scripting workflows.
