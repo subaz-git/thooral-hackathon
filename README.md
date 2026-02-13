@@ -174,14 +174,6 @@ python3 gsuite_cli.py docs copy <document_id> "Copied Document Title"
 
 **`gsuite docs share <document_id> --email <email> --role <reader|writer|commenter>`**
 
-Shares a Google Document with a specific user and role.
-
-**Usage:**
-
-```bash
-python3 gsuite_cli.py docs share <document_id> --email user@example.com --role writer
-```
-
 ### 3. Google Sheets Commands
 
 **`gsuite sheets create <title>`**
