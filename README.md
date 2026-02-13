@@ -30,7 +30,13 @@ Follow the on-screen instructions to complete the authentication process in your
 
 **`gsuite auth logout`**
 
-(Not yet implemented - planned) Revokes access tokens and deletes local credentials.
+Revokes your refresh token (when available) and deletes local credentials from `~/.gsuite_cli/credentials.json`.
+
+**Usage:**
+
+```bash
+python3 gsuite_cli.py auth logout
+```
 
 ### 2. Google Docs Commands
 
@@ -82,6 +88,14 @@ Retrieves and displays the content of a specified Google Document.
 python3 gsuite_cli.py docs get <document_id>
 ```
 
+```bash
+python3 gsuite_cli.py docs get <document_id> --format markdown
+```
+
+```bash
+python3 gsuite_cli.py docs get <document_id> --format markdown --output ./doc.md
+```
+
 **Output:**
 
 ```
@@ -101,6 +115,12 @@ Deletes a specified Google Document.
 ```bash
 python3 gsuite_cli.py docs delete <document_id>
 ```
+
+```bash
+python3 gsuite_cli.py docs delete <document_id> --yes
+```
+
+Without `--yes`, the CLI asks for confirmation before deleting.
 
 **Output:**
 
@@ -124,9 +144,43 @@ python3 gsuite_cli.py docs edit <document_id> --append "This text will be added 
 Text appended to document ID '<document_id>' successfully.
 ```
 
-**Important Note on Appending to Empty Documents:**
+**`gsuite docs edit <document_id> --set <text_content>`**
 
-Due to nuances in the Google Docs API's `insertText` operation, directly appending text to a *truly empty* document (one with no content beyond the default initial newline character) for the *very first* insertion can be inconsistent. This `edit --append` command is most reliable when used on documents that already contain some content. If you encounter issues when appending to a brand new, empty document, consider adding some initial content manually or using a different API request type (e.g., `replaceContent`) for the first write.
+Replaces the full document content with the provided text.
+
+**Usage:**
+
+```bash
+python3 gsuite_cli.py docs edit <document_id> --set "This becomes the full content."
+```
+
+**Output:**
+
+```
+Document ID '<document_id>' content replaced successfully.
+```
+
+`docs edit` accepts exactly one mode at a time: `--append` or `--set`.
+
+**`gsuite docs copy <document_id> <new_title>`**
+
+Creates a copy of an existing Google Document with a new title.
+
+**Usage:**
+
+```bash
+python3 gsuite_cli.py docs copy <document_id> "Copied Document Title"
+```
+
+**`gsuite docs share <document_id> --email <email> --role <reader|writer|commenter>`**
+
+Shares a Google Document with a specific user and role.
+
+**Usage:**
+
+```bash
+python3 gsuite_cli.py docs share <document_id> --email user@example.com --role writer
+```
 
 ## Setup and Installation
 
