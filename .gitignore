@@ -4,3 +4,5 @@ __*/
 tests/
 
 __*.py
+integration*
+QUALITY_*
