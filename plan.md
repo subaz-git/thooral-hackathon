@@ -20,17 +20,25 @@
   - `sheets write <spreadsheet_id> <range> <data>`
   - `sheets clear <spreadsheet_id> <range>`
   - Sheets OAuth scope added (`https://www.googleapis.com/auth/spreadsheets`)
+- Phase 4 Forms MVP implemented:
+  - `forms create <title>`
+  - `forms list`
+  - `forms add-question <form_id> --type <text|paragraph|choice> --title <question_text> [--options ...]`
+  - `forms get-responses <form_id>`
+  - Forms scope upgraded to write-capable (`https://www.googleapis.com/auth/forms.body`)
 - Service-layer refactor completed:
   - `services/config.py`
   - `services/credentials.py`
   - `services/auth_service.py`
   - `services/docs_service.py`
+  - `services/forms_service.py`
+  - `services/sheets_service.py`
   - `services/errors.py`
 - Standardized CLI error output via shared helpers.
 - Added CLI smoke tests in `tests/test_cli.py`.
 
 ### Remaining from Roadmap
-- Forms MVP and quality hardening.
+- Quality hardening and advanced docs improvements.
 
 ## 1. Goal
 
@@ -59,19 +67,21 @@ Based on `gsuite_cli.py`, the current implementation is:
 - `sheets read <spreadsheet_id> <range>`
 - `sheets write <spreadsheet_id> <range> <data>`
 - `sheets clear <spreadsheet_id> <range>`
-- Shared services for config/credentials/auth/docs/sheets/errors
+- `forms create <title>`
+- `forms list`
+- `forms add-question <form_id> --type <text|paragraph|choice> --title <question_text> [--options ...]`
+- `forms get-responses <form_id>`
+- Shared services for config/credentials/auth/docs/sheets/forms/errors
 - Basic CLI smoke tests (`tests/test_cli.py`)
 
 ### Not Implemented Yet
-- Any `forms ...` command group
 - Integration tests with real Google APIs
 - Optional docs replace command (`docs edit --replace ...`)
 
 ## 3. Key Gaps and Risks
 
-- Forms command group is still missing, so the CLI is Docs+Sheets today.
-- Automated integration coverage is missing for live Google API behavior.
-- Existing users may need to re-authenticate to grant newly added Sheets scope.
+- Integration tests for real Google APIs are still missing.
+- Existing users may need to re-authenticate to grant newly added Sheets/Forms scopes.
 - Current tests are smoke-level and do not yet validate end-to-end API responses.
 
 ## 4. Optimized Roadmap
@@ -160,6 +170,6 @@ Based on `gsuite_cli.py`, the current implementation is:
 ## 6. Immediate Next Sprint (Recommended)
 
 1. Implement optional `docs edit --replace <old> --with <new>`.
-2. Start Forms MVP with `forms create` and `forms list`.
+2. Add response formatting/export options for `forms get-responses`.
 3. Add integration tests against a dedicated Google test account.
 4. Add machine-readable output mode (`--json`) for scripting workflows.

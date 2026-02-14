@@ -235,6 +235,58 @@ Clears values from a specific range.
 python3 gsuite_cli.py sheets clear <spreadsheet_id> "Sheet1!A1:C5"
 ```
 
+### 4. Google Forms Commands
+
+**`gsuite forms create <title>`**
+
+Creates a new Google Form.
+
+**Usage:**
+
+```bash
+python3 gsuite_cli.py forms create "Customer Feedback"
+```
+
+**`gsuite forms list`**
+
+Lists Google Forms accessible via your Drive.
+
+**Usage:**
+
+```bash
+python3 gsuite_cli.py forms list
+```
+
+**`gsuite forms add-question <form_id> --type <text|paragraph|choice> --title <question_text> [--options <opt1,opt2,...>]`**
+
+Adds a question to an existing form.
+
+**Usage:**
+
+```bash
+python3 gsuite_cli.py forms add-question <form_id> --type text --title "What is your name?"
+```
+
+```bash
+python3 gsuite_cli.py forms add-question <form_id> --type paragraph --title "Tell us more about your experience."
+```
+
+```bash
+python3 gsuite_cli.py forms add-question <form_id> --type choice --title "Rate us" --options "Excellent,Good,Fair,Poor"
+```
+
+`--options` is required when `--type choice` is used.
+
+**`gsuite forms get-responses <form_id>`**
+
+Fetches responses for a form and prints each response with answer values.
+
+**Usage:**
+
+```bash
+python3 gsuite_cli.py forms get-responses <form_id>
+```
+
 ## Setup and Installation
 
 1.  **Clone the repository:**
@@ -251,7 +303,7 @@ python3 gsuite_cli.py sheets clear <spreadsheet_id> "Sheet1!A1:C5"
 3.  **Google Cloud Project Setup:**
     *   Go to the [Google Cloud Console](https://console.cloud.google.com/).
     *   Create a new project or select an existing one.
-    *   Enable the **Google Docs API**, **Google Drive API**, and **Google Sheets API** for your project.
+    *   Enable the **Google Docs API**, **Google Drive API**, **Google Sheets API**, and **Google Forms API** for your project.
     *   Navigate to "APIs & Services" -> "Credentials".
     *   Create "OAuth client ID" credentials for a "Desktop app".
     *   Download the `client_secrets.json` file.
@@ -265,6 +317,6 @@ python3 gsuite_cli.py sheets clear <spreadsheet_id> "Sheet1!A1:C5"
     python3 gsuite_cli.py auth login
     ```
 
-If you authenticated before Sheets support was added, run `auth login` again so the new Sheets scope is granted.
+If you authenticated before Sheets/Forms support was added, run `auth login` again so new scopes are granted.
 
 You are now ready to use the GSuite CLI!

@@ -1,6 +1,7 @@
 import click
 
 from services import docs_service
+from services import forms_service
 from services import sheets_service
 from services.auth_service import login as login_user
 from services.auth_service import logout as logout_user
@@ -393,6 +394,137 @@ def clear_sheet(spreadsheet_id, cell_range):
         )
     except Exception as error:
         echo_exception("sheets clear", error)
+
+
+@gsuite.group()
+def forms():
+    """Commands for Google Forms."""
+    pass
+
+
+@forms.command(name="create")
+@click.argument("title")
+def create_form(title):
+    """Creates a new Google Form."""
+    creds = get_credentials()
+    if not creds:
+        return
+
+    try:
+        form = forms_service.create_form(creds, title)
+        form_id = form.get("formId")
+        click.echo(f"Created form with title: {title}")
+        click.echo(f"Form ID: {form_id}")
+        click.echo(f"Edit URL: https://docs.google.com/forms/d/{form_id}/edit")
+        if form.get("responderUri"):
+            click.echo(f"Responder URL: {form.get('responderUri')}")
+    except Exception as error:
+        echo_exception("forms create", error)
+
+
+@forms.command(name="list")
+def list_forms():
+    """Lists Google Forms."""
+    creds = get_credentials()
+    if not creds:
+        return
+
+    try:
+        items = forms_service.list_forms(creds)
+        if not items:
+            click.echo("No forms found.")
+            return
+
+        click.echo("Forms:")
+        for item in items:
+            click.echo(f"{item['name']} ({item['id']})")
+    except Exception as error:
+        echo_exception("forms list", error)
+
+
+@forms.command(name="add-question")
+@click.argument("form_id")
+@click.option(
+    "--type",
+    "question_type",
+    required=True,
+    type=click.Choice(["text", "paragraph", "choice"], case_sensitive=False),
+    help="Question type.",
+)
+@click.option("--title", "question_title", required=True, help="Question title.")
+@click.option(
+    "--options",
+    help="Comma-separated options for choice questions.",
+)
+def add_question(form_id, question_type, question_title, options):
+    """Adds a question to a Google Form."""
+    creds = get_credentials()
+    if not creds:
+        return
+
+    parsed_options = []
+    if options:
+        parsed_options = [opt.strip() for opt in options.split(",") if opt.strip()]
+
+    if question_type.lower() == "choice" and not parsed_options:
+        echo_error(
+            "forms add-question",
+            "--options is required for choice questions.",
+        )
+        return
+
+    try:
+        forms_service.add_question(
+            creds,
+            form_id,
+            question_type.lower(),
+            question_title,
+            parsed_options,
+        )
+        click.echo(
+            f"Added '{question_type.lower()}' question to form '{form_id}'."
+        )
+    except ValueError as error:
+        echo_error("forms add-question", str(error))
+    except Exception as error:
+        echo_exception("forms add-question", error)
+
+
+@forms.command(name="get-responses")
+@click.argument("form_id")
+def get_responses(form_id):
+    """Gets responses for a Google Form."""
+    creds = get_credentials()
+    if not creds:
+        return
+
+    try:
+        result = forms_service.get_responses(creds, form_id)
+        responses = result.get("responses", [])
+
+        click.echo(f"Form ID: {form_id}")
+        click.echo(f"Total responses: {len(responses)}")
+        if not responses:
+            return
+
+        for response in responses:
+            response_id = response.get("responseId", "unknown")
+            submitted = response.get("lastSubmittedTime", "unknown")
+            click.echo(f"Response {response_id} ({submitted})")
+
+            answers = response.get("answers", {})
+            if not answers:
+                click.echo("  No answers.")
+                continue
+
+            for question_id, answer_data in answers.items():
+                values = forms_service.extract_answer_values(answer_data)
+                if values:
+                    click.echo(f"  {question_id}: {', '.join(values)}")
+                else:
+                    click.echo(f"  {question_id}: [non-text answer]")
+    except Exception as error:
+        echo_exception("forms get-responses", error)
 
 
 if __name__ == '__main__':
