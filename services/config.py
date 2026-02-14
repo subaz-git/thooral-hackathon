@@ -11,5 +11,6 @@ SCOPES = [
 CREDENTIALS_DIR = os.path.join(os.path.expanduser("~"), ".gsuite_cli")
 CLIENT_SECRETS_FILE = os.path.join(CREDENTIALS_DIR, "client_secrets.json")
 CREDENTIALS_FILE = os.path.join(CREDENTIALS_DIR, "credentials.json")
+CONFIG_FILE = os.path.join(CREDENTIALS_DIR, "config.json")
 
 TOKEN_REVOKE_URL = "https://oauth2.googleapis.com/revoke"

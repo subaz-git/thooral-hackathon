@@ -235,6 +235,12 @@ Clears values from a specific range.
 python3 gsuite_cli.py sheets clear <spreadsheet_id> "Sheet1!A1:C5"
 ```
 
+```bash
+python3 gsuite_cli.py sheets clear <spreadsheet_id> "Sheet1!A1:C5" --yes
+```
+
+Without `--yes`, the CLI asks for confirmation before clearing.
+
 ### 4. Google Forms Commands
 
 **`gsuite forms create <title>`**
@@ -318,5 +324,39 @@ python3 gsuite_cli.py forms get-responses <form_id>
     ```
 
 If you authenticated before Sheets/Forms support was added, run `auth login` again so new scopes are granted.
+
+## Optional Configuration
+
+You can define defaults in `~/.gsuite_cli/config.json`.
+
+Example:
+
+```json
+{
+  "docs": {
+    "default_format": "markdown"
+  },
+  "confirmations": {
+    "docs_delete": true,
+    "sheets_clear": true
+  }
+}
+```
+
+- `docs.default_format`: `plain_text` or `markdown`
+- `confirmations.docs_delete`: prompt before docs delete when true
+- `confirmations.sheets_clear`: prompt before sheets clear when true
+
+Reference template: `config.example.json`
+
+## Testing and Release
+
+- CLI smoke tests:
+  - `python3 -m unittest -v tests/test_cli.py`
+- Live integration tests:
+  - `export GSUITE_CLI_RUN_INTEGRATION=1`
+  - `python3 -m unittest -v integration_tests/test_google_workspace_live.py`
+- Release checklist:
+  - `QUALITY_CHECKLIST.md`
 
 You are now ready to use the GSuite CLI!

@@ -26,6 +26,12 @@
   - `forms add-question <form_id> --type <text|paragraph|choice> --title <question_text> [--options ...]`
   - `forms get-responses <form_id>`
   - Forms scope upgraded to write-capable (`https://www.googleapis.com/auth/forms.body`)
+- Phase 5 quality hardening (core) implemented:
+  - Optional config file support at `~/.gsuite_cli/config.json`
+  - Configurable confirmation prompts (`docs delete`, `sheets clear`)
+  - Improved API error hints (400/429/5xx guidance)
+  - Integration test scaffold (`integration_tests/test_google_workspace_live.py`)
+  - Release checklist (`QUALITY_CHECKLIST.md`)
 - Service-layer refactor completed:
   - `services/config.py`
   - `services/credentials.py`
@@ -38,7 +44,7 @@
 - Added CLI smoke tests in `tests/test_cli.py`.
 
 ### Remaining from Roadmap
-- Quality hardening and advanced docs improvements.
+- Advanced docs improvements and live integration test execution in a real test account.
 
 ## 1. Goal
 
@@ -75,12 +81,12 @@ Based on `gsuite_cli.py`, the current implementation is:
 - Basic CLI smoke tests (`tests/test_cli.py`)
 
 ### Not Implemented Yet
-- Integration tests with real Google APIs
+- Executed integration runs in a real test account/CI environment
 - Optional docs replace command (`docs edit --replace ...`)
 
 ## 3. Key Gaps and Risks
 
-- Integration tests for real Google APIs are still missing.
+- Integration test scaffolding exists but has not been executed in this environment.
 - Existing users may need to re-authenticate to grant newly added Sheets/Forms scopes.
 - Current tests are smoke-level and do not yet validate end-to-end API responses.
 
@@ -155,7 +161,8 @@ Based on `gsuite_cli.py`, the current implementation is:
 - Unit tests for parsing, auth utilities, and command helpers.
 - Integration test harness using a dedicated test Google account.
 - Confirmation prompts for destructive commands (`docs delete`, future clear/delete commands).
-- Optional config file support at `~/.gsuite_cli/config.yaml`.
+- Optional config file support at `~/.gsuite_cli/config.json`.
+- Release checklist for dependency/scope/test validation.
 
 ### Exit Criteria
 - Core happy-path commands covered by tests.

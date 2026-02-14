@@ -1,5 +1,6 @@
 import click
 
+from services.app_config import load_app_config
 from services import docs_service
 from services import forms_service
 from services import sheets_service
@@ -8,6 +9,51 @@ from services.auth_service import logout as logout_user
 from services.config import CLIENT_SECRETS_FILE
 from services.credentials import get_credentials
 from services.errors import echo_error, echo_exception, echo_warning
+
+
+VALID_DOC_FORMATS = {"plain_text", "markdown"}
+
+
+def _get_app_config():
+    app_config, config_error = load_app_config()
+    if config_error:
+        echo_warning("config", config_error)
+    return app_config
+
+
+def _coerce_bool(value, default):
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"1", "true", "yes", "on"}:
+            return True
+        if lowered in {"0", "false", "no", "off"}:
+            return False
+    return default
+
+
+def _is_confirmation_enabled(app_config, key, default=True):
+    raw_value = app_config.get("confirmations", {}).get(key, default)
+    return _coerce_bool(raw_value, default)
+
+
+def _resolve_docs_format(app_config, cli_format):
+    if cli_format:
+        return cli_format.lower()
+
+    configured_format = str(
+        app_config.get("docs", {}).get("default_format", "plain_text")
+    ).lower()
+    if configured_format in VALID_DOC_FORMATS:
+        return configured_format
+
+    echo_warning(
+        "config",
+        f"Invalid docs.default_format '{configured_format}'. Using 'plain_text'.",
+    )
+    return "plain_text"
+
 
 @click.group()
 def gsuite():
@@ -109,9 +155,8 @@ def list():
     '--format',
     'output_format',
     type=click.Choice(['plain_text', 'markdown'], case_sensitive=False),
-    default='plain_text',
-    show_default=True,
-    help='Output format for document content.',
+    default=None,
+    help='Output format for document content. Defaults to config value.',
 )
 @click.option('--output', 'output_path', help='Save content to a local file path.')
 def get(document_id, output_format, output_path):
@@ -121,8 +166,9 @@ def get(document_id, output_format, output_path):
         return
 
     try:
+        app_config = _get_app_config()
         summary = docs_service.get_document_summary(creds, document_id)
-        selected_format = output_format.lower()
+        selected_format = _resolve_docs_format(app_config, output_format)
         rendered_content = docs_service.render_content(
             summary["title"],
             summary["content"],
@@ -160,7 +206,8 @@ def delete(document_id, yes):
     if not creds:
         return
 
-    if not yes:
+    app_config = _get_app_config()
+    if not yes and _is_confirmation_enabled(app_config, "docs_delete", default=True):
         confirmed = click.confirm(
             f"Delete document '{document_id}'?",
             default=False,
@@ -381,11 +428,22 @@ def write_sheet(
 @sheets.command(name="clear")
 @click.argument("spreadsheet_id")
 @click.argument("cell_range")
-def clear_sheet(spreadsheet_id, cell_range):
+@click.option('--yes', is_flag=True, help='Skip clear confirmation prompt.')
+def clear_sheet(spreadsheet_id, cell_range, yes):
     """Clears values in a spreadsheet range."""
     creds = get_credentials()
     if not creds:
         return
+
+    app_config = _get_app_config()
+    if not yes and _is_confirmation_enabled(app_config, "sheets_clear", default=True):
+        confirmed = click.confirm(
+            f"Clear range '{cell_range}' in spreadsheet '{spreadsheet_id}'?",
+            default=False,
+        )
+        if not confirmed:
+            click.echo("Clear cancelled.")
+            return
 
     try:
         result = sheets_service.clear_values(creds, spreadsheet_id, cell_range)
